@@ -14,20 +14,24 @@ Conversions =>
 #include "stdafx.h"
 #include <iostream>
 
-int cups = 5;
+double cups;
 bool enoughBeans = true;
 bool enoughWater = true;
+bool finished = false;
 bool checks = true;
 bool replay = false;
-int beans = 200;
-int litersOfWater = 6;
+double beans;
+double litersOfWater;
 
 void GrindBeans() 
 {
-	std::cout << "\tGrinding beans..." << std::endl;
+	if (enoughBeans && enoughWater) {
+		std::cout << "\tGrinding beans..." << std::endl;
+		finished = true;
+	}	
 }
 
-void CheckHopper(int beans)
+void CheckHopper(double beans)
 {
 	std::cout << "\tChecking hopper..." << std::endl;
 
@@ -37,9 +41,11 @@ void CheckHopper(int beans)
 	}
 }
 
-void CheckReservoir(int litersOfWater)
+void CheckReservoir(double litersOfWater)
 {
-	std::cout << "\tChecking reservoir..." << std::endl;
+	if (enoughBeans) {
+		std::cout << "\tChecking reservoir..." << std::endl;
+	}	
 
 	if (litersOfWater < cups / 2) { //if there isnt enough water for the desired amount of coffee cups
 		checks = false;
@@ -47,11 +53,37 @@ void CheckReservoir(int litersOfWater)
 	}
 }
 
+void DisplayError(bool checks)
+{
+	if (!checks) {
+		if (!enoughBeans) {
+			std::cout << "\n\tNot enough beans!" << std::endl;
+		}
+		if (!enoughWater) {
+			std::cout << "\n\tNot enough water!" << std::endl;
+		}
+	}
+	else if (finished) {
+		std::cout << "\n\tBrew success!" << std::endl;
+	}
+}
+
 void Brew(int cups)
 {
 	CheckHopper(beans);
+	DisplayError(checks); //specifies what check failed to user
+
 	CheckReservoir(litersOfWater);
+	if (enoughBeans){ //if there arent any failed checks yet
+		DisplayError(checks);
+	}
+		
+
 	GrindBeans();
+	if (enoughWater) {
+		DisplayError(checks);
+	}
+		
 }
 
 void Replay() //asks if user wants to use the coffee maker again
@@ -65,6 +97,7 @@ void Replay() //asks if user wants to use the coffee maker again
 		enoughBeans = true;
 		enoughWater = true;
 		replay = true;
+		finished = false;
 	}
 	else {
 		replay = false;
@@ -72,28 +105,16 @@ void Replay() //asks if user wants to use the coffee maker again
 
 }
 
-void DisplayError(bool checks)
-{
-	if (!checks) {
-		if (!enoughBeans) {
-			std::cout << "\n\tNot enough beans!" << std::endl;
-		}
-		if (!enoughWater) {
-			std::cout << "\n\tNot enough water!" << std::endl;
-		}
-	}
-	else {
-		std::cout << "\n\tBrew success!" << std::endl;
-	}
-}
-
 void FillMachine() 
 {
 	std::cout << "\tKeep in mind:\n\t1 liter of water is 2 cups\n\t 25 beans are in 1 cup" << std::endl;
 
-	std::cout << "\n\tHow many cups would you like to brew?" << std::endl;
-	std::cin >> cups;
+	do{
+		std::cout << "\n\tHow many cups would you like to brew?" << std::endl;
+		std::cin >> cups;
 
+	} while (cups <= 0);
+	
 	std::cout << "\tHow many beans will you put in?" << std::endl;
 	std::cin >> beans;
 
@@ -105,10 +126,7 @@ int main()
 {
 	do { 
 		FillMachine();
-
 		Brew(cups);
-
-		DisplayError(checks); //specifies what check failed to user
 		Replay();
 
 	} while (replay);
